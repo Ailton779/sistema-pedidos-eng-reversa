@@ -1,6 +1,11 @@
 class Pedido {
   constructor() {
+    if (Pedido.instance) {
+      return Pedido.instance;
+    }
+
     this.itens = [];
+    Pedido.instance = this;
   }
 
   adicionarItem(item) {
@@ -12,16 +17,10 @@ class Pedido {
   }
 
   calcularTotal() {
-    let total = 0;
-
-    for (let item of this.itens) {
-      total += item.subtotal;
-    }
-
-    return total;
+    return this.itens.reduce((total, item) => total + item.subtotal, 0);
   }
 
   limpar() {
     this.itens = [];
   }
-}       
+}
