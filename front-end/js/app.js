@@ -50,7 +50,7 @@ async function finalizar() {
   };
 
   try {
-    const response = await fetch('http://localhost:8000/backend/api.php', {
+    const response = await fetch('/backend/api.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(dadosPedido)
