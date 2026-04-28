@@ -35,24 +35,53 @@ function renderizarLista() {
   document.getElementById("total").innerText = total;
 }
 
-function finalizar() {
-  const total = pedido.calcularTotal();
-
-  let desconto = 0;
-
-  if (total > 100) {
-    desconto = total * 0.2;
-  } else if (total > 50) {
-    desconto = total * 0.1;
+async function finalizar() {
+  if (pedido.itens.length === 0) {
+    alert("Adicione itens antes de finalizar!");
+    return;
   }
 
-  const taxa = total * 0.05;
-  const totalFinal = total - desconto + taxa;
+  const dadosPedido = {
+    itens: pedido.itens.map(item => ({
+      produto: item.produto,
+      preco: item.subtotal / item.qtd,
+      qtd: item.qtd
+    }))
+  };
 
-  alert("Total final: " + totalFinal);
+  try {
+    const response = await fetch('http://localhost:8000/backend/api.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(dadosPedido)
+    });
 
-  localStorage.setItem("ultimoPedido", totalFinal);
+    const resultado = await response.json();
 
-  pedido.limpar();
-  renderizarLista();
+    if (resultado.status === "sucesso") {
+      let mensagem = " *Novo Pedido - Pastelaria do Zé* \n\n";
+      mensagem += `*ID:* ${resultado.pedido_id}\n\n`;
+      mensagem += "*Itens:*\n";
+      
+      pedido.itens.forEach(item => {
+        mensagem += `- ${item.qtd}x ${item.produto} (R$ ${item.subtotal.toFixed(2)})\n`;
+      });
+      
+      mensagem += `\n*Total a pagar: R$ ${pedido.calcularTotal().toFixed(2)}*`;
+
+      const numeroWhatsApp = "5588999999999"; 
+      const linkWhatsApp = `https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(mensagem)}`;
+      
+      alert("Pedido salvo no sistema! Redirecionando para o WhatsApp...");
+      window.open(linkWhatsApp, '_blank');
+
+      pedido.limpar();
+      renderizarLista();
+    } else {
+      alert("Erro ao salvar pedido no servidor.");
+    }
+  } catch (error) {
+    console.error("Erro na integração:", error);
+    alert("Não foi possível conectar ao servidor PHP.");
+  }
 }
