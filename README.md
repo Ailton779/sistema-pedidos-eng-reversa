@@ -244,3 +244,18 @@ Ele garante que exista apenas uma instância do pedido durante toda a execução
 Dessa forma, todas as operações realizadas no sistema utilizam o mesmo objeto de pedido, garantindo controle centralizado e comportamento previsível.
 
 ---
+
+## Parte 9 – Arquitetura Final e Integração (O que foi feito e como)
+
+**O que foi feito:**
+O sistema evoluiu do modelo legado monolítico procedural para uma arquitetura em camadas (Client-Server), separando estritamente as responsabilidades do sistema em dois ambientes isolados: Frontend e Backend.
+
+**Como foi feito:**
+* **Frontend:** Mantido estritamente para lidar com a Interface do Usuário (UI) e regras de interação visual. O envio do pedido passou a ser realizado de forma assíncrona utilizando a API `fetch` do JavaScript.
+* **Backend:** Implementado em PHP utilizando os conceitos de rotas, Controllers, Models e Repositories. O backend expõe um endpoint (`api.php`) encarregado de receber os dados via requisição HTTP `POST`, realizar o processamento e acionar a camada de persistência.
+* **Persistência e Ambiente:** Os dados enviados pelo cliente são persistidos fisicamente no servidor no arquivo `dados.json`. Para garantir a padronização da execução e evitar conflitos de rotas estáticas, o sistema foi empacotado utilizando Docker.
+
+**Justificativa Técnica:**
+A implementação desta arquitetura garante o princípio de Separação de Conceitos (Separation of Concerns). O frontend agora desconhece o método de armazenamento dos dados, atuando apenas como despachante das informações. Simultaneamente, o backend ignora detalhes visuais da aplicação gráfica, concentrando-se em receber, validar e gravar o JSON. 
+
+Esta modularidade reduz drasticamente o acoplamento. Caso o requisito mude para utilizar um banco de dados relacional (SQL) no futuro, apenas a classe `Repository` no backend precisará ser alterada, sem causar nenhum impacto no código JavaScript ou no HTML da interface.
